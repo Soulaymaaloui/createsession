@@ -61,7 +61,6 @@ const Page = () => {
           Code: code,
           startTime: startTime,
           Time_Limit: timeLimit,
-          quizConfig:quizConfig1,
         }
       );
       console.log("Session created successfully!");
@@ -69,35 +68,82 @@ const Page = () => {
       console.error("Error creating session:", error);
     }
   };
- const handleConfig = async () => {
+ const handleAddQuizConfig = async () => {
+    try {
+        const quizConfig = await database.createDocument(
+            "66262a5fe83579cf8b0e", 
+            "663b4cf31be4f4b456fa", 
+            ID.unique(),           
+            {
+                Logo: "",            
+                Background_Image: ""
+            }
+        );
+        console.log("QuizConfig created successfully!", quizConfig);
+        return quizConfig.$id;
+    } catch (error) {
+        console.error("Error creating QuizConfig:", error);
+    }
+};
+
+ const handleUploadFiles = async (logo, bgImage) => {
    try {
-     const logoUrl = await storage.createFile(
+     const logoFile = await storage.createFile(
        "65fd6912304ce7300161", 
        ID.unique(), 
        logo 
      );
-     const bgImageUrl = await storage.createFile(
+
+     const bgImageFile = await storage.createFile(
        "65fd6912304ce7300161", 
        ID.unique(), 
        bgImage 
      );
 
-     // Update the configuration document in your database with logoUrl and bgImageUrl
-     await database.updateDocument(
-       "66262a5fe83579cf8b0e", 
-       "663b4cf31be4f4b456fa", 
-       ID.unique(),
-       {
-         Logo: logoUrl,
-         BackgroundImage: bgImageUrl,
-       }
-     );
-
-     console.log("Configuration updated successfully!");
+     console.log("Files uploaded successfully!", { logoFile, bgImageFile });
+     return { logoFileId: logoFile.$id, bgImageFileId: bgImageFile.$id };
    } catch (error) {
-     console.error("Error updating configuration:", error);
+     console.error("Error uploading files:", error);
    }
  };
+
+     const handleGeneratePreviewUrls = async (logoFileId, bgImageFileId) => {
+    try {
+        const logoPreviewUrl = await storage.getFilePreview(
+            "65fd6912304ce7300161", 
+            logoFileId
+        );
+
+        const bgImagePreviewUrl = await storage.getFilePreview(
+            "65fd6912304ce7300161", 
+            bgImageFileId
+        );
+
+        console.log("Preview URLs generated successfully!", { logoPreviewUrl, bgImagePreviewUrl });
+        return { logoPreviewUrl, bgImagePreviewUrl };
+    } catch (error) {
+        console.error("Error generating preview URLs:", error);
+    }
+};
+
+const handleUpdateConfigDocument = async (idDocument, logoPreviewUrl, bgImagePreviewUrl) => {
+    try {
+        await database.updateDocument(
+            "66262a5fe83579cf8b0e", // Database ID
+            "663b4cf31be4f4b456fa", // Collection ID
+            idDocument,             // Document ID to be updated
+            {
+                Logo: logoPreviewUrl,
+                BackgroundImage: bgImagePreviewUrl,
+            }
+        );
+
+        console.log("Configuration updated successfully!");
+    } catch (error) {
+        console.error("Error updating configuration:", error);
+    }
+};
+
 
 
   return (
