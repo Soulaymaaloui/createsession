@@ -50,6 +50,8 @@ const Page = () => {
   };
   
   const handleAddSession = async () => {
+        const quizConfigId = await handleAddQuizConfig();
+
     try {
       await database.createDocument(
         "66262a5fe83579cf8b0e",
@@ -61,6 +63,7 @@ const Page = () => {
           Code: code,
           startTime: startTime,
           Time_Limit: timeLimit,
+          quizConfig:quizConfigId
         }
       );
       console.log("Session created successfully!");
